@@ -3,6 +3,7 @@ import { useMoralis } from "react-moralis"
 import networkMapping from "../../constants/networkMapping.json"
 import GET_ACTIVE_ITEMS from "../../constants/subgraphQueries"
 import { useQuery } from "@apollo/client"
+import { useEffect } from "react"
 
 type NetworkMapping = Record<string, { NftMarketplace: string[] }>
 
