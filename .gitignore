@@ -2,8 +2,8 @@
 
 # dependencies
 /node_modules
-/next-nfts/.env
-/next-nfts/node_modules
+/frontend/.env
+/frontend/node_modules
 /nft-graph/node_modules
 /nftmarketplace/.env
 /nftmarketplace/node_modules
