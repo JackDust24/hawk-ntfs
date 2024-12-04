@@ -1,8 +1,8 @@
-import { Modal, Input, useNotification } from "web3uikit"
 import { useState } from "react"
-import { useWeb3Contract } from "react-moralis"
+import { useContractWrite } from "wagmi"
 import nftMarketplaceAbi from "../../constants/NftMarketplace.json"
-import { ethers } from "ethers"
+import { parseEther } from "viem"
+import { useNotification } from "web3uikit"
 
 export default function UpdateListingModal({
     nftAddress,
@@ -11,54 +11,47 @@ export default function UpdateListingModal({
     marketplaceAddress,
     onClose,
 }) {
-    const dispatch = useNotification()
     const [priceToUpdateListingWith, setPriceToUpdateListingWith] = useState("0")
+    const dispatch = useNotification()
 
-    const handleUpdateListingSuccess = async (transaction: any) => {
-        await transaction.wait(1)
+    const handleUpdateListingSuccess = async (transaction) => {
         dispatch({
             type: "success",
-            message: "listing updated",
-            title: "Listing updated - please refresh (and move blocks)",
+            message: "Listing updated successfully!",
+            title: "Listing Updated",
             position: "topR",
         })
         onClose && onClose()
         setPriceToUpdateListingWith("0")
     }
 
-    const { runContractFunction: updateListing } = useWeb3Contract({
+    const { write: updateListing } = useContractWrite({
+        address: marketplaceAddress,
         abi: nftMarketplaceAbi,
-        contractAddress: marketplaceAddress,
         functionName: "updateListing",
-        params: {
-            nftAddress: nftAddress,
-            tokenId: tokenId,
-            newPrice: ethers.utils.parseEther(priceToUpdateListingWith || "0"),
-        },
+        args: [nftAddress, tokenId, parseEther(priceToUpdateListingWith || "0")],
+        onError: (error) => console.log(error),
+        onSuccess: handleUpdateListingSuccess,
     })
 
     return (
-        <Modal
-            isVisible={isVisible}
-            onCancel={onClose}
-            onCloseButtonPressed={onClose}
-            onOk={() => {
-                updateListing({
-                    onError: (error) => {
-                        console.log(error)
-                    },
-                    onSuccess: () => handleUpdateListingSuccess,
-                })
-            }}
-        >
-            <Input
-                label="Update listing price in L1 Currency (ETH)"
-                name="New listing price"
-                type="number"
-                onChange={(event) => {
-                    setPriceToUpdateListingWith(event.target.value)
-                }}
-            />
-        </Modal>
+        <div className={`modal ${isVisible ? "visible" : "hidden"}`}>
+            <div>
+                <label>Update Listing Price (ETH):</label>
+                <input
+                    type="number"
+                    value={priceToUpdateListingWith}
+                    onChange={(e) => setPriceToUpdateListingWith(e.target.value)}
+                />
+                <button
+                    onClick={() => {
+                        updateListing()
+                    }}
+                >
+                    Update Listing
+                </button>
+                <button onClick={onClose}>Cancel</button>
+            </div>
+        </div>
     )
 }

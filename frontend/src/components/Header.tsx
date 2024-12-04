@@ -1,5 +1,7 @@
-import { ConnectButton } from "web3uikit"
 import Link from "next/link"
+;("use client")
+// import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { ConnectBtn } from "@/components/ConnectBtn"
 
 export default function Header() {
     const navButtonClass =
@@ -11,9 +13,6 @@ export default function Header() {
                 <Link href="/" className={navButtonClass}>
                     Home
                 </Link>
-                {/* <Link href="/sell-nft" className={navButtonClass}>
-                    Sell NFT
-                </Link> */}
                 <Link href="/create-asset" className={navButtonClass}>
                     Sell Asset
                 </Link>
@@ -23,7 +22,7 @@ export default function Header() {
                 <Link href="/creator-dashboard" className={navButtonClass}>
                     Creator dashboard
                 </Link>
-                <ConnectButton moralisAuth={false} />
+                <ConnectBtn />
             </div>
         </nav>
     )

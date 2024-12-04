@@ -9,26 +9,27 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "@apollo/client": "^3.8.10",
+        "@apollo/client": "^3.11.10",
         "@rainbow-me/rainbowkit": "^2.2.1",
         "@tanstack/react-query": "^5.62.1",
-        "graphql": "^16.4.0",
-        "next": "14.0.4",
+        "graphql": "^16.9.0",
+        "next": "15.0.3",
         "react": "^18",
         "react-dom": "^18",
-        "viem": "^2.21.53",
-        "wagmi": "^2.13.3"
+        "viem": "2.x",
+        "wagmi": "^2.13.3",
+        "web3uikit": "^1.0.4"
     },
     "devDependencies": {
-        "@types/node": "^20",
+        "@types/node": "^22",
         "@types/react": "^18",
         "@types/react-dom": "^18",
-        "autoprefixer": "^10.0.1",
-        "eslint": "^8",
-        "eslint-config-next": "14.0.4",
+        "autoprefixer": "^10.4.20",
+        "eslint": "^9",
+        "eslint-config-next": "15.0.3",
         "postcss": "^8",
-        "tailwindcss": "^3.3.0",
+        "tailwindcss": "^3.4.15",
         "typescript": "^5"
     },
-    "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+    "packageManager": "yarn@1.22.22"
 }

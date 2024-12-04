@@ -1,18 +1,16 @@
 import { useState, useEffect } from "react"
-import { useWeb3Contract, useMoralis } from "react-moralis"
+import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { parseEther, formatEther } from "viem"
 import nftMarketplaceAbi from "../../constants/NftMarketplace.json"
 import nftAbi from "../../constants/BasicNft.json"
 import Image from "next/image"
-import { Card, useNotification } from "web3uikit"
-import { ethers } from "ethers"
 import UpdateListingModal from "./UpdateListingModal"
+import { Card, useNotification } from "web3uikit"
 
 const truncateStr = (fullStr: string, strLen: number) => {
     if (fullStr.length <= strLen) return fullStr
-
     const separator = "..."
-    const seperatorLength = separator.length
-    const charsToShow = strLen - seperatorLength
+    const charsToShow = strLen - separator.length
     const frontChars = Math.ceil(charsToShow / 2)
     const backChars = Math.floor(charsToShow / 2)
     return (
@@ -23,65 +21,46 @@ const truncateStr = (fullStr: string, strLen: number) => {
 }
 
 export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress, seller }) {
-    const { isWeb3Enabled, account } = useMoralis()
     const [imageURI, setImageURI] = useState("")
     const [tokenName, setTokenName] = useState("")
     const [tokenDescription, setTokenDescription] = useState("")
     const [showModal, setShowModal] = useState(false)
     const hideModal = () => setShowModal(false)
     const dispatch = useNotification()
+    const { data: hash, writeContract } = useWriteContract()
 
-    const { runContractFunction: getTokenURI } = useWeb3Contract({
+    // Contract Read: Token URI
+    const result = useReadContract({
+        address: nftAddress,
         abi: nftAbi,
-        contractAddress: nftAddress,
         functionName: "tokenURI",
-        params: {
-            tokenId: tokenId,
-        },
+        args: [tokenId],
     })
 
-    const { runContractFunction: buyItem } = useWeb3Contract({
-        abi: nftMarketplaceAbi,
-        contractAddress: marketplaceAddress,
-        functionName: "buyItem",
-        msgValue: price,
-        params: {
-            nftAddress: nftAddress,
-            tokenId: tokenId,
-        },
-    })
-
-    async function updateUI() {
-        const tokenURI = (await getTokenURI()) as string
-        console.log(`The TokenURI is ${tokenURI}`)
-        // We are going to cheat a little here...
-        if (tokenURI) {
-            // IPFS Gateway: A server that will return IPFS files from a "normal" URL.
-            const requestURL = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
-            const tokenURIResponse = await (await fetch(requestURL)).json()
-            console.log("tokenURIResponse ", tokenURIResponse)
-            const imageURI = tokenURIResponse.image
-            const imageURIURL = imageURI.replace("ipfs://", "https://ipfs.io/ipfs/")
-            setImageURI(imageURIURL)
-            setTokenName(tokenURIResponse.name)
-            setTokenDescription(tokenURIResponse.description)
-            // We could render the Image on our sever, and just call our sever.
-            // For testnets & mainnet -> use moralis server hooks
-            // Have the world adopt IPFS
-            // Build our own IPFS gateway
-        }
-        // get the tokenURI
-        // using the image tag from the tokenURI, get the image
-    }
+    // Contract Write: Buy Item
 
     const handleCardClick = () => {
         isOwnedByUser
             ? setShowModal(true)
-            : buyItem({
-                  onError: (error) => console.log(error),
-                  onSuccess: () => handleBuyItemSuccess(),
+            : writeContract({
+                  address: marketplaceAddress,
+                  abi: nftMarketplaceAbi,
+                  functionName: "buyItem",
+                  args: [nftAddress, tokenId],
+                  // overrides: { value: price },
+                  // onError: (error) => console.log(error),
+                  // onSuccess: () => handleBuyItemSuccess(),
               })
     }
+    // const { writeContract: buyItem } = useWriteContract({
+    //     address: marketplaceAddress,
+    //     abi: nftMarketplaceAbi,
+    //     functionName: "buyItem",
+    //     args: [nftAddress, tokenId],
+    //     overrides: { value: price },
+    //     onError: (error) => console.log(error),
+    //     onSuccess: () => handleBuyItemSuccess(),
+    // })
 
     const handleBuyItemSuccess = () => {
         dispatch({
@@ -92,11 +71,28 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
         })
     }
 
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+        hash,
+    })
+
     useEffect(() => {
-        if (isWeb3Enabled) {
-            updateUI()
+        if (result) {
+            const fetchMetadata = async () => {
+                const requestURL = result.replace("ipfs://", "https://ipfs.io/ipfs/")
+                const tokenURIResponse = await fetch(requestURL).then((res) => res.json())
+                setImageURI(tokenURIResponse.image.replace("ipfs://", "https://ipfs.io/ipfs/"))
+                setTokenName(tokenURIResponse.name)
+                setTokenDescription(tokenURIResponse.description)
+            }
+            fetchMetadata()
         }
-    }, [isWeb3Enabled])
+    }, [result])
+
+    useEffect(() => {
+        if (isConfirmed) {
+            handleBuyItemSuccess()
+        }
+    }, [isConfirmed])
 
     const isOwnedByUser = seller === account || seller === undefined
     const formattedSellerAddress = isOwnedByUser ? "you" : truncateStr(seller || "", 15)
@@ -132,7 +128,7 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
                                         alt="nft image"
                                     />
                                     <div className="font-bold italic">
-                                        Price {ethers.utils.formatUnits(price, "ether")} ETH
+                                        Price {formatEther(price)} ETH
                                     </div>
                                 </div>
                             </div>
@@ -141,6 +137,9 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
                 ) : (
                     <div>Loading...</div>
                 )}
+                {hash && <div>Transaction Hash: {hash}</div>}
+                {isConfirming && <div>Waiting for confirmation...</div>}
+                {isConfirmed && <div>Transaction confirmed.</div>}
             </div>
         </div>
     )
