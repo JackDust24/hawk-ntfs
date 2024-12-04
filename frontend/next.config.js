@@ -1,11 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: "export", // So that we can do static export
+    output: "export",
     reactStrictMode: true,
     images: {
         unoptimized: true,
     },
     swcMinify: true,
+    webpack: (config) => {
+        config.externals.push("pino-pretty", "lokijs", "encoding")
+        return config
+    },
     async rewrites() {
         return [
             {

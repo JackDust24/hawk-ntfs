@@ -3,11 +3,13 @@
 # dependencies
 /node_modules
 /frontend/.env
-/frontend/node_modules
 /nft-graph/node_modules
 /nftmarketplace/.env
 /nftmarketplace/node_modules
 /nftmarketplace/cache
+/frontend/cache
+/frontend/node_modules
+/frontend/.next
 
 # testing
 /coverage
