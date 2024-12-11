@@ -10,6 +10,13 @@
 /frontend/cache
 /frontend/node_modules
 /frontend/.next
+/frontend/out
+
+**/node_modules
+**/.env
+**/.next
+**/cache
+**/out
 
 # testing
 /coverage
