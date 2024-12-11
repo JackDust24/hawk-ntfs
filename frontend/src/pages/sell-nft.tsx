@@ -1,27 +1,41 @@
+"use client"
+
 import Head from "next/head"
 import Image from "next/image"
 import styles from "../styles/Home.module.css"
 import { Form, useNotification, Button } from "web3uikit"
-import { useMoralis, useWeb3Contract } from "react-moralis"
 import { ethers } from "ethers"
 import nftAbi from "../../constants/BasicNft.json"
 import nftMarketplaceAbi from "../../constants/NftMarketplace.json"
 import networkMapping from "../../constants/networkMapping.json"
 import { useEffect, useState } from "react"
+import { useChainId, useAccount, useWriteContract, useReadContract } from "wagmi"
+// import { writeContract } from '@wagmi/core'
+
+// import { waitForTransactionReceipt } from "@wagmi/core"
 
 type NetworkMapping = Record<string, { NftMarketplace: string[] }>
 
 export default function Home() {
     const networkMap: NetworkMapping = networkMapping
 
-    const { chainId, account, isWeb3Enabled } = useMoralis()
-    const chainString = chainId ? parseInt(chainId).toString() : "31337"
-    const marketplaceAddress = networkMap[chainString].NftMarketplace[0]
+    const { address } = useAccount()
+    const chainId = useChainId()
     const dispatch = useNotification()
+    const { data: hash, writeContract } = useWriteContract()
+
     const [proceeds, setProceeds] = useState("0")
 
-    const { runContractFunction } = useWeb3Contract({
-        params: { performData: "0x00" },
+    const isWeb3Enabled = !!chainId
+    const chainString = chainId ? chainId.toString() : "31337"
+    const marketplaceAddress = networkMap[chainString].NftMarketplace[0]
+
+    const result = useReadContract({
+        abi: nftMarketplaceAbi,
+        address: `0x${marketplaceAddress}`,
+        functionName: "getProceeds",
+        blockTag: "safe",
+        args: [address],
     })
 
     async function approveAndList(data) {
@@ -30,44 +44,53 @@ export default function Home() {
         const tokenId = data.data[1].inputResult
         const price = ethers.utils.parseUnits(data.data[2].inputResult, "ether").toString()
 
-        const approveOptions = {
-            abi: nftAbi,
-            contractAddress: nftAddress,
-            functionName: "approve",
-            params: {
-                to: marketplaceAddress,
-                tokenId: tokenId,
-            },
-        }
+        try {
+            writeContract({
+                address: nftAddress,
+                abi: nftAbi,
+                functionName: "approve",
+                args: [marketplaceAddress, tokenId],
+            })
 
-        await runContractFunction({
-            params: approveOptions,
-            onSuccess: (tx) => handleApproveSuccess(tx, nftAddress, tokenId, price),
-            onError: (error) => {
-                console.log(error)
-            },
-        })
+            await handleApproveSuccess(hash, nftAddress, tokenId, price)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     async function handleApproveSuccess(tx, nftAddress, tokenId, price) {
         console.log("Ok! Now time to list")
         await tx.wait()
-        const listOptions = {
-            abi: nftMarketplaceAbi,
-            contractAddress: marketplaceAddress,
-            functionName: "nftItem",
-            params: {
-                nftAddress: nftAddress,
-                tokenId: tokenId,
-                price: price,
-            },
-        }
 
-        await runContractFunction({
-            params: listOptions,
-            onSuccess: () => handleListSuccess(),
-            onError: (error) => console.log(error),
-        })
+        try {
+            writeContract({
+                address: nftAddress,
+                abi: nftMarketplaceAbi,
+                functionName: "nftItem",
+                args: [nftAddress, tokenId, price],
+            })
+
+            await handleListSuccess()
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function handleWithdrawProceeds() {
+        console.log("Ok! handleWithdrawProceeds")
+
+        try {
+            writeContract({
+                address: `0x${marketplaceAddress}`,
+                abi: nftMarketplaceAbi,
+                functionName: "withdrawProceeds",
+                args: [],
+            })
+
+            await handleWithdrawSuccess()
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     async function handleListSuccess() {
@@ -87,26 +110,11 @@ export default function Home() {
         })
     }
 
-    async function setupUI() {
-        const returnedProceeds = await runContractFunction({
-            params: {
-                abi: nftMarketplaceAbi,
-                contractAddress: marketplaceAddress,
-                functionName: "getProceeds",
-                params: {
-                    seller: account,
-                },
-            },
-            onError: (error) => console.log(error),
-        })
-        if (returnedProceeds) {
-            setProceeds(returnedProceeds.toString())
-        }
-    }
-
     useEffect(() => {
-        setupUI()
-    }, [proceeds, account, isWeb3Enabled, chainId])
+        if (result) {
+            setProceeds(result.toString())
+        }
+    }, [proceeds, address, isWeb3Enabled, chainId, result])
 
     return (
         <div className={styles.container}>
@@ -138,22 +146,7 @@ export default function Home() {
             />
             <div>Withdraw {proceeds} proceeds</div>
             {proceeds != "0" ? (
-                <Button
-                    onClick={() => {
-                        runContractFunction({
-                            params: {
-                                abi: nftMarketplaceAbi,
-                                contractAddress: marketplaceAddress,
-                                functionName: "withdrawProceeds",
-                                params: {},
-                            },
-                            onError: (error) => console.log(error),
-                            onSuccess: () => handleWithdrawSuccess,
-                        })
-                    }}
-                    text="Withdraw"
-                    type="button"
-                />
+                <Button onClick={handleWithdrawProceeds} text="Withdraw" type="button" />
             ) : (
                 <div>No proceeds detected</div>
             )}

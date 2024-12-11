@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 error NftIsAlreadyListed(address nftAddress, uint256 tokenId);
 error NftIsNotListed(address nftAddress, uint256 tokenId);
@@ -177,8 +177,8 @@ contract NftMarketplace is ReentrancyGuard {
 
     s_proceeds[msg.sender] = 0;
     // The .call{value: proceeds} invokes a contract with a specified amount of ether
-    (bool success, ) = payable(msg.sender).call{value: proceeds}(''); // The curly braxes contains optional data that can be passed
-    require(success, 'The transfer of funds failed');
+    (bool success, ) = payable(msg.sender).call{value: proceeds}(""); // The curly braxes contains optional data that can be passed
+    require(success, "The transfer of funds failed");
   }
 
   /////////////////////

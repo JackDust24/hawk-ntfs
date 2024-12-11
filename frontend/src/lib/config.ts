@@ -10,7 +10,7 @@ const supportedChains: Chain[] = [sepolia, bscTestnet, blastSepolia]
 
 export const config = getDefaultConfig({
     appName: "NFT Marketplace",
-    projectId,
+    projectId: "5fdbb8ff79ca4dc261a946c9b9dab0a0",
     chains: supportedChains as any,
     ssr: true,
     storage: createStorage({

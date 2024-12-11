@@ -36,7 +36,7 @@ async function updateAbi() {
 }
 
 async function updateContractAddresses() {
-  const chainId = network.config.chainId?.toString()
+  const chainId = network.config.chainId?.toString() || '1337'
   const nftMarketplace = await ethers.getContract('NftMarketplace')
   console.log('nftMarketplace > ', nftMarketplace)
   const contractAddresses = JSON.parse(

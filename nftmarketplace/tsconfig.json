@@ -1,13 +1,16 @@
 {
-    "compilerOptions": {
-      "target": "es2018",
-      "module": "commonjs",
-      "strict": true,
-      "esModuleInterop": true,
-      "outDir": "dist"
-      // optional:
-      // "suppressImplicitAnyIndexErrors": true
-    },
-    "include": ["./scripts", "./test", "./deploy", "./deploy-helpers"],
-    "files": ["./hardhat.config.ts", "./helper-hardhat-config.ts"]
-  }
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "commonjs",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "strict": true,
+    "rootDirs": ["./src", "./scripts", "./test"],
+    "esModuleInterop": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js"],
+  "exclude": ["node_modules"],
+  "files": ["./hardhat.config.ts"]
+}

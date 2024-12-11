@@ -1,6 +1,4 @@
 import Link from "next/link"
-;("use client")
-// import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { ConnectBtn } from "@/components/ConnectBtn"
 
 export default function Header() {

@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { useContractWrite } from "wagmi"
+import { useEffect, useState } from "react"
+import { useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import nftMarketplaceAbi from "../../constants/NftMarketplace.json"
 import { parseEther } from "viem"
 import { useNotification } from "web3uikit"
@@ -13,8 +13,13 @@ export default function UpdateListingModal({
 }) {
     const [priceToUpdateListingWith, setPriceToUpdateListingWith] = useState("0")
     const dispatch = useNotification()
+    const { data: hash, writeContract: updateListing } = useWriteContract()
 
-    const handleUpdateListingSuccess = async (transaction) => {
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+        hash,
+    })
+
+    const handleUpdateListingSuccess = () => {
         dispatch({
             type: "success",
             message: "Listing updated successfully!",
@@ -25,14 +30,20 @@ export default function UpdateListingModal({
         setPriceToUpdateListingWith("0")
     }
 
-    const { write: updateListing } = useContractWrite({
-        address: marketplaceAddress,
-        abi: nftMarketplaceAbi,
-        functionName: "updateListing",
-        args: [nftAddress, tokenId, parseEther(priceToUpdateListingWith || "0")],
-        onError: (error) => console.log(error),
-        onSuccess: handleUpdateListingSuccess,
-    })
+    const handleUpdateListing = () => {
+        updateListing({
+            address: marketplaceAddress,
+            abi: nftMarketplaceAbi,
+            functionName: "updateListing",
+            args: [nftAddress, tokenId, parseEther(priceToUpdateListingWith || "0")],
+        })
+    }
+
+    useEffect(() => {
+        if (isConfirmed) {
+            handleUpdateListingSuccess()
+        }
+    }, [isConfirmed])
 
     return (
         <div className={`modal ${isVisible ? "visible" : "hidden"}`}>
@@ -45,7 +56,7 @@ export default function UpdateListingModal({
                 />
                 <button
                     onClick={() => {
-                        updateListing()
+                        handleUpdateListing()
                     }}
                 >
                     Update Listing

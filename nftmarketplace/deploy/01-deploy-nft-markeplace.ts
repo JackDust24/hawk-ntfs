@@ -5,6 +5,8 @@ import {
 import verify from '../utils/verify'
 import { DeployFunction } from 'hardhat-deploy/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import "@nomiclabs/hardhat-ethers";
+
 
 // hre is the functionality that is exposed by Hardhat
 const deployNftMarketplace: DeployFunction = async function (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { useReadContract, useWaitForTransactionReceipt, useWriteContract, useAccount } from "wagmi"
 import { parseEther, formatEther } from "viem"
 import nftMarketplaceAbi from "../../constants/NftMarketplace.json"
 import nftAbi from "../../constants/BasicNft.json"
@@ -21,6 +21,8 @@ const truncateStr = (fullStr: string, strLen: number) => {
 }
 
 export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress, seller }) {
+    const { address } = useAccount()
+
     const [imageURI, setImageURI] = useState("")
     const [tokenName, setTokenName] = useState("")
     const [tokenDescription, setTokenDescription] = useState("")
@@ -29,15 +31,20 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
     const dispatch = useNotification()
     const { data: hash, writeContract } = useWriteContract()
 
-    // Contract Read: Token URI
-    const result = useReadContract({
+    const {
+        data: tokenURI,
+        isError,
+        isLoading,
+    } = useReadContract({
         address: nftAddress,
         abi: nftAbi,
         functionName: "tokenURI",
         args: [tokenId],
     })
 
-    // Contract Write: Buy Item
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+        hash,
+    })
 
     const handleCardClick = () => {
         isOwnedByUser
@@ -47,20 +54,8 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
                   abi: nftMarketplaceAbi,
                   functionName: "buyItem",
                   args: [nftAddress, tokenId],
-                  // overrides: { value: price },
-                  // onError: (error) => console.log(error),
-                  // onSuccess: () => handleBuyItemSuccess(),
               })
     }
-    // const { writeContract: buyItem } = useWriteContract({
-    //     address: marketplaceAddress,
-    //     abi: nftMarketplaceAbi,
-    //     functionName: "buyItem",
-    //     args: [nftAddress, tokenId],
-    //     overrides: { value: price },
-    //     onError: (error) => console.log(error),
-    //     onSuccess: () => handleBuyItemSuccess(),
-    // })
 
     const handleBuyItemSuccess = () => {
         dispatch({
@@ -71,14 +66,13 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
         })
     }
 
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-        hash,
-    })
-
     useEffect(() => {
-        if (result) {
+        console.log("Token URI back:", tokenURI)
+
+        if (tokenURI && typeof tokenURI === "string") {
+            console.log("Token URI is string:", tokenURI)
             const fetchMetadata = async () => {
-                const requestURL = result.replace("ipfs://", "https://ipfs.io/ipfs/")
+                const requestURL = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
                 const tokenURIResponse = await fetch(requestURL).then((res) => res.json())
                 setImageURI(tokenURIResponse.image.replace("ipfs://", "https://ipfs.io/ipfs/"))
                 setTokenName(tokenURIResponse.name)
@@ -86,7 +80,7 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
             }
             fetchMetadata()
         }
-    }, [result])
+    }, [tokenURI])
 
     useEffect(() => {
         if (isConfirmed) {
@@ -94,7 +88,7 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
         }
     }, [isConfirmed])
 
-    const isOwnedByUser = seller === account || seller === undefined
+    const isOwnedByUser = seller === address || seller === undefined
     const formattedSellerAddress = isOwnedByUser ? "you" : truncateStr(seller || "", 15)
 
     return (

@@ -19,6 +19,7 @@ type Props = {
 }
 
 export default function Providers({ children, cookie }: Props) {
+    console.log("Providers")
     // We need the initial state for essentially "hydrates" the cookie data on the client-side
     const initialState = cookieToInitialState(config, cookie)
 

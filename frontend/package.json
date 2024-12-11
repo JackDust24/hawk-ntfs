@@ -13,9 +13,11 @@
         "@rainbow-me/rainbowkit": "^2.2.1",
         "@tanstack/react-query": "^5.62.1",
         "graphql": "^16.9.0",
+        "moralis-v1": "^1.13.0",
         "next": "15.0.3",
         "react": "^18",
         "react-dom": "^18",
+        "react-moralis": "^1.4.2",
         "viem": "2.x",
         "wagmi": "^2.13.3",
         "web3uikit": "^1.0.4"
