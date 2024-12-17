@@ -12,7 +12,7 @@ import type { NonPayableOverrides } from "../../../../common";
 import type {
   BasicNftTwo,
   BasicNftTwoInterface,
-} from "../../../../contracts/test/BasicNFtTwo.sol/BasicNftTwo";
+} from "../../../../contracts/test/BasicNftTwo.sol/BasicNftTwo";
 
 const _abi = [
   {

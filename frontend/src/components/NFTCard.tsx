@@ -88,8 +88,9 @@ export default function NFTCard({ price, nftAddress, tokenId, marketplaceAddress
         }
     }, [isConfirmed])
 
-    const isOwnedByUser = seller === address || seller === undefined
+    const isOwnedByUser = seller === address?.toLowerCase() || seller === undefined
     const formattedSellerAddress = isOwnedByUser ? "you" : truncateStr(seller || "", 15)
+    console.log("Check seller and account", seller, address?.toLowerCase, isOwnedByUser)
 
     return (
         <div>

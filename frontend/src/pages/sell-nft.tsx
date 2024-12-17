@@ -30,7 +30,11 @@ export default function Home() {
     const chainString = chainId ? chainId.toString() : "31337"
     const marketplaceAddress = networkMap[chainString].NftMarketplace[0]
 
-    const result = useReadContract({
+    const {
+        data: tokenURI,
+        isError,
+        isLoading,
+    } = useReadContract({
         abi: nftMarketplaceAbi,
         address: `0x${marketplaceAddress}`,
         functionName: "getProceeds",
@@ -39,10 +43,12 @@ export default function Home() {
     })
 
     async function approveAndList(data) {
-        console.log("Approving...")
+        console.log("Approving...", data)
         const nftAddress = data.data[0].inputResult
         const tokenId = data.data[1].inputResult
         const price = ethers.utils.parseUnits(data.data[2].inputResult, "ether").toString()
+
+        console.log("price", price)
 
         try {
             writeContract({
@@ -111,10 +117,11 @@ export default function Home() {
     }
 
     useEffect(() => {
-        if (result) {
-            setProceeds(result.toString())
+        if (tokenURI) {
+            console.log("result", tokenURI)
+            setProceeds(tokenURI.toString())
         }
-    }, [proceeds, address, isWeb3Enabled, chainId, result])
+    }, [proceeds, address, isWeb3Enabled, chainId, tokenURI])
 
     return (
         <div className={styles.container}>

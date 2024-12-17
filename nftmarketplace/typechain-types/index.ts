@@ -22,5 +22,5 @@ export type { NftMarketplace } from "./contracts/NFTMarketplace.sol/NftMarketpla
 export { NftMarketplace__factory } from "./factories/contracts/NFTMarketplace.sol/NftMarketplace__factory";
 export type { BasicNft } from "./contracts/test/BasicNft";
 export { BasicNft__factory } from "./factories/contracts/test/BasicNft__factory";
-export type { BasicNftTwo } from "./contracts/test/BasicNFtTwo.sol/BasicNftTwo";
-export { BasicNftTwo__factory } from "./factories/contracts/test/BasicNFtTwo.sol/BasicNftTwo__factory";
+export type { BasicNftTwo } from "./contracts/test/BasicNftTwo.sol/BasicNftTwo";
+export { BasicNftTwo__factory } from "./factories/contracts/test/BasicNftTwo.sol/BasicNftTwo__factory";

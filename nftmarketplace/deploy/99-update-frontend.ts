@@ -33,6 +33,12 @@ async function updateAbi() {
     `${frontEndAbiLocation}BasicNft.json`,
     basicNft.interface.format(ethers.utils.FormatTypes.json).toString()
   )
+
+  const basicNft2 = await ethers.getContract('BasicNftTwo')
+  fs.writeFileSync(
+    `${frontEndAbiLocation}BasicNftTwo.json`,
+    basicNft.interface.format(ethers.utils.FormatTypes.json).toString()
+  )
 }
 
 async function updateContractAddresses() {

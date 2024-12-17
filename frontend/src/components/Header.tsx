@@ -11,7 +11,7 @@ export default function Header() {
                 <Link href="/" className={navButtonClass}>
                     Home
                 </Link>
-                <Link href="/create-asset" className={navButtonClass}>
+                <Link href="/sell-nft" className={navButtonClass}>
                     Sell Asset
                 </Link>
                 <Link href="/my-assets" className={navButtonClass}>

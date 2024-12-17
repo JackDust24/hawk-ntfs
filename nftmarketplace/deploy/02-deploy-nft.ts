@@ -39,7 +39,24 @@ const deployNft: DeployFunction = async function (
   }
 
   log('......................................................')
+
+  const basicNftTwo = await deploy('BasicNftTwo', {
+    from: deployer,
+    args: args,
+    log: true,
+    waitConfirmations: waitBlockConfirmations,
+  })
+
+  //Verify the deployment if the deploymemt is NOT a network chain and only needs verifying on a REAL or PUBLIC network
+  if (
+    !developmentChains.includes(network.name) &&
+    process.env.ETHERSCAN_API_KEY
+  ) {
+    log('verifying...')
+    await verify(basicNftTwo.address, args)
+  }
+
 }
 
 export default deployNft
-deployNft.tags = ['all', 'basicNft']
+deployNft.tags = ['all', 'basicNft', 'basicNftTwo']

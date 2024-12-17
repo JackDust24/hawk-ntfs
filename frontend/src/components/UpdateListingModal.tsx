@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import nftMarketplaceAbi from "../../constants/NftMarketplace.json"
 import { parseEther } from "viem"
-import { useNotification } from "web3uikit"
+import { Modal, Input, useNotification } from "web3uikit"
 
 export default function UpdateListingModal({
     nftAddress,
@@ -19,7 +19,7 @@ export default function UpdateListingModal({
         hash,
     })
 
-    const handleUpdateListingSuccess = () => {
+    const handleUpdateListingSuccess = async () => {
         dispatch({
             type: "success",
             message: "Listing updated successfully!",
@@ -46,23 +46,38 @@ export default function UpdateListingModal({
     }, [isConfirmed])
 
     return (
-        <div className={`modal ${isVisible ? "visible" : "hidden"}`}>
-            <div>
-                <label>Update Listing Price (ETH):</label>
-                <input
-                    type="number"
-                    value={priceToUpdateListingWith}
-                    onChange={(e) => setPriceToUpdateListingWith(e.target.value)}
-                />
-                <button
-                    onClick={() => {
-                        handleUpdateListing()
-                    }}
-                >
-                    Update Listing
-                </button>
-                <button onClick={onClose}>Cancel</button>
-            </div>
-        </div>
+        // <div className={`modal ${isVisible ? "visible" : "hidden"}`}>
+        //     <div>
+        //         <label>Update Listing Price (ETH):</label>
+        //         <input
+        //             type="number"
+        //             value={priceToUpdateListingWith}
+        //             onChange={(e) => setPriceToUpdateListingWith(e.target.value)}
+        //         />
+        //         <button
+        //             onClick={() => {
+        //                 handleUpdateListing()
+        //             }}
+        //         >
+        //             Update Listing
+        //         </button>
+        //         <button onClick={onClose}>Cancel</button>
+        //     </div>
+        <Modal
+            isVisible={isVisible}
+            onCancel={onClose}
+            onCloseButtonPressed={onClose}
+            onOk={() => handleUpdateListing()}
+        >
+            <Input
+                label="Update listing price in L1 Currency (ETH)"
+                name="New listing price"
+                type="number"
+                onChange={(event) => {
+                    setPriceToUpdateListingWith(event.target.value)
+                }}
+            />
+        </Modal>
+        // </div>
     )
 }

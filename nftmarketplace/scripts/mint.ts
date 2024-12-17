@@ -4,7 +4,7 @@ import { moveBlocks } from '../utils/move-blocks'
 const PRICE = ethers.utils.parseEther('0.1') // The pareSether converts ether to its equivalent in wei
 
 async function mint() {
-  const basicNft = await ethers.getContract('BasicNft')
+  const basicNft = await ethers.getContract('BasicNftTwo')
   console.log('Minting NFT...')
   const mintTx = await basicNft.mintNft()
   const mintTxReceipt = await mintTx.wait(1)

@@ -15,7 +15,7 @@ async function mintAndList(): Promise<void> {
   if (randomNumber === 1) {
     basicNft = await ethers.getContract("BasicNft")
   } else {
-    basicNft = await ethers.getContract("BasicNft")
+    basicNft = await ethers.getContract("BasicNftTwo")
   }
 
   console.log("Minting NFT...")
